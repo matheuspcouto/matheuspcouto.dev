@@ -7,25 +7,25 @@ import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/co
 })
 export class PageHeaderComponent implements OnInit, OnDestroy {
 
-  /** Textos a serem digitados na animação */
-  private textoDigitado: string[] = ['Hello World !'];
+  /** Texts to be typed in the animation */
+  private typedTexts: string[] = ['Hello World !'];
 
-  /** Referência ao elemento onde o texto será digitado */
+  /** Reference to the element where the text will be typed */
   @ViewChild('typedElement', { static: true }) typedElement!: ElementRef;
 
-  /** Instância do timeout para a animação de digitação */
+  /** Instance of timeout for typing animation */
   private typedInstance: any;
-  /** Índice atual do texto sendo digitado */
+  /** Current index of the text being typed */
   private currentIndex = 0;
-  /** Texto atualmente exibido */
+  /** Currently displayed text */
   private currentText = '';
-  /** Indica se o texto está sendo apagado */
+  /** Indicates if the text is being deleted */
   private isDeleting = false;
-  /** Velocidade de digitação e apagamento */
+  /** Typing and deletion speed */
   private typeSpeed = 100;
-  /** Velocidade de apagamento */
+  /** Deletion speed */
   private deleteSpeed = 50;
-  /** Tempo de pausa ao finalizar a digitação de uma palavra */
+  /** Pause time when finishing typing a word */
   private pauseTime = 2000;
 
   ngOnInit() {
@@ -39,11 +39,11 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Inicia o efeito de digitação no elemento referenciado.
+   * Starts the typing effect on the referenced element.
    */
   private startTypingEffect(): void {
     const element = this.typedElement.nativeElement;
-    const fullText = this.textoDigitado[this.currentIndex];
+    const fullText = this.typedTexts[this.currentIndex];
 
     if (this.isDeleting) {
       this.currentText = fullText.substring(0, this.currentText.length - 1);
@@ -60,7 +60,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
       this.isDeleting = true;
     } else if (this.isDeleting && this.currentText === '') {
       this.isDeleting = false;
-      this.currentIndex = (this.currentIndex + 1) % this.textoDigitado.length;
+      this.currentIndex = (this.currentIndex + 1) % this.typedTexts.length;
     }
 
     this.typedInstance = setTimeout(() => this.startTypingEffect(), speed);

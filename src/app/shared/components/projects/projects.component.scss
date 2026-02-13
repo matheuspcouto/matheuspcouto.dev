@@ -1,0 +1,20 @@
+.projects {
+  mpc-card {
+    /* Cores */
+    --mpc-bg-card: white;
+    --mpc-border-color-card: var(--color-primary);
+    --mpc-bg-links-card: var(--color-secondary);
+    --mpc-color-links-card: white;
+  }
+
+  .technologies {
+    margin-left: 5px;
+    border-radius: 5px;
+  }
+
+  .btn-project {
+    --mpc-bg-color-btn: var(--color-secondary);
+    --mpc-text-color-btn: white;
+    --mpc-bg-color-btn-hover: var(--color-primary);
+  }
+}

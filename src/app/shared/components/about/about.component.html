@@ -1,0 +1,48 @@
+<section class="about" id="about">
+  <div class="container">
+
+    <div class="section-title">
+      <h2>About</h2>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-4" data-aos="fade-right">
+        <img src="assets/img/profile.png" class="img-fluid rounded-lg">
+      </div>
+      <div class="col-lg-8 pt-4 pt-lg-0" data-aos="fade-left">
+        <h3>Matheus Pimentel Do Couto</h3>
+        <p>
+          A Full-stack Software Engineer with solid knowledge of web and mobile application architecture and design. I have worked in software engineering for over five years, specializing in Java, Angular, and Node.js. Over the years, I have supervised junior engineers through code reviews and mentoring, developed and collaborated on financial applications for Banco Bradesco (Pix, Open Finance, and Mobile Recharge), and led the technological evolution and refactoring of over five hundred Microservices and REST APIs in Java, Node, and Angular applications used by thousands of users in Brazil.
+        </p>
+        <p>
+          During this period, I gained significant experience in SOLID principles and Clean Code, applying them along with hexagonal architecture and Domain-Driven Design (DDD). I implemented a feature to redesign and transform the visual identity of the Bradesco Pix application for individuals, bringing a significant improvement in user experience (UX/UI) and total control over Pix functionalities.
+        </p>
+        <p>
+          During my undergraduate studies, I had the opportunity to graduate with top marks for my final project, in which I developed a web application for the Methodist Church in Palmas, focusing on accessibility for its diverse audiences and incorporating advanced UX/UI features to ensure an inclusive and engaging experience. I continue to develop this project to this day, managing a team of engineers who assist me.
+        </p>
+        <p>
+          In addition to my work in development, I actively participate as a leader of a youth group and in a visual communication ministry. In these activities, I apply my passion for leadership and creativity to inspire and motivate teams to achieve their goals, always seeking to positively impact the lives of others.
+        </p>
+        <div class="row">
+          <div class="col-lg-6">
+            <ul>
+              <li><i class="bi bi-arrow-right-short"></i> <strong>Date of Birth:</strong> May 23, 2000
+              </li>
+              <li><i class="bi bi-arrow-right-short"></i> <strong>Living in:</strong> Palmas, Tocantins, Brazil</li>
+              <li><i class="bi bi-arrow-right-short"></i> <strong>Age:</strong> {{ age }}</li>
+              <li><i class="bi bi-arrow-right-short"></i> <strong>From:</strong> Belém, Pará, Brazil</li>
+            </ul>
+          </div>
+        </div>
+        <div class="buttons">
+          <mpc-button class="btn-resume" (click)="viewResumePT()" texto="Resume | PT-BR"
+            icone="bi bi-file-earmark-text" posicaoIcone="esquerda" />
+
+          <mpc-button class="btn-resume" (click)="viewResumeEN()" texto="Resume | EN-US"
+            icone="bi bi-file-earmark-text" posicaoIcone="esquerda" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

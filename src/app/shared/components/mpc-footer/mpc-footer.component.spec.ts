@@ -16,16 +16,16 @@ describe('MpcFooterComponent', () => {
     fixture.detectChanges();
   });
 
-  it('deve criar o componente', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('deve renderizar o footer corretamente', () => {
+  it('should render footer correctly', () => {
     const compiled = fixture.nativeElement;
     expect(compiled).toBeTruthy();
   });
 
-  it('deve ser um componente standalone', () => {
+  it('should be a standalone component', () => {
     expect(component).toBeInstanceOf(MpcFooterComponent);
   });
 });

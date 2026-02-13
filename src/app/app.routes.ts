@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { SegmentoRotas } from './shared/enums/rotas-enum';
+import { RouteSegment } from './shared/enums/routes-enum';
 
 export const routes: Routes = [
-  /*  Rotas para Home */
+  /*  Routes for Home */
   {
-    path: SegmentoRotas.HOME,
+    path: RouteSegment.HOME,
     pathMatch: 'full',
     redirectTo: ''
   }

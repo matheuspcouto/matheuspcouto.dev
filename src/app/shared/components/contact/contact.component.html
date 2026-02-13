@@ -1,0 +1,87 @@
+<section class="contact" id="contact">
+    <div class="container">
+
+        <div class="section-title">
+            <h2>Contact</h2>
+        </div>
+
+        <div class="row">
+
+            <!-- Contact Information -->
+            <div class="col-lg-5 info-contact" data-aos="fade-right">
+                <h3>Contact Information</h3>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>Phone</h4>
+                        <p>(63) 9 9201-4337</p>
+                    </div>
+                </div>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>Email</h4>
+                        <p>matheuspcouto70&#64;gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>Location</h4>
+                        <p>Palmas, Tocantins, Brazil</p>
+                    </div>
+                </div>
+
+                <div class="redes-sociais">
+                    <h4>Social Media</h4>
+                    <div class="links-sociais">
+                        <a href="https://github.com/matheuspcouto" target="_blank"><i class="bi bi-github"></i></a>
+                        <a href="https://www.linkedin.com/in/matheuspcouto/" target="_blank"><i
+                                class="bi bi-linkedin"></i></a>
+                        <a href="https://www.instagram.com/matheuspcouto" target="_blank">
+                            <i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-lg-7" data-aos="fade-left">
+                <div class="contact-form">
+                    <h3>Send a Message</h3>
+
+                    <form [formGroup]="form">
+
+                        <!-- Name Field -->
+                        <mpc-input-text formControlName="name" label="Name" [min]="3" class="form-input" />
+
+                        <!-- Email Field -->
+                        <mpc-input-email formControlName="email" [required]="true" class="form-input" />
+
+                        <!-- Message Field -->
+                        <mpc-input-text-area formControlName="message" label="Message" [min]="10"
+                            class="form-input" />
+
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-center mt-5">
+                            <mpc-button class="btn-send" texto="Send" (click)="submitForm()"
+                                icone="bi bi-send" [disabled]="form.invalid" />
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>

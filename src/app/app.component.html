@@ -1,18 +1,18 @@
-<mpc-navbar id="navbar" [abas]="abas" logo="/assets/img/Perfil.png" [isPaginaUnica]="true" />
+<mpc-navbar id="navbar" [abas]="tabs" logo="/assets/img/profile.png" [isPaginaUnica]="true" />
 
 <main>
   <page-header />
-  <sobre />
-  <habilidades />
-  <certificacoes />
-  <artigos />
-  <carreira />
-  <projetos />
-  <contato />
+  <about />
+  <skills />
+  <experience />
+  <certifications />
+  <projects />
+  <articles />
+  <contact />
 </main>
 
 <mpc-footer />
 
-<mpc-btn-float id="btn-whatsapp" icone="bi bi-whatsapp" (click)="abrirWhatsApp()" />
+<mpc-btn-float id="btn-whatsapp" icone="bi bi-whatsapp" (click)="openWhatsApp()" />
 
 <mpc-loader id="loader-exemplo" />

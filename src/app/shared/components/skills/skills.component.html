@@ -1,0 +1,23 @@
+<section class="skills" id="skills">
+  <div class="container">
+
+    <div class="section-title">
+      <h2>Skills</h2>
+    </div>
+
+    <div class="row">
+      @for (skill of skills; track $index) {
+      <div class="col-lg-4" data-aos="fade-up">
+        <div class="content">
+          <i [class]="skill.icon"></i>
+          <span>{{ skill.title }}</span>
+          @for (item of skill.items; track $index) {
+          <p>{{ item }}</p>
+          }
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,50 @@
+.about {
+  h3 {
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--color-primary);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul li {
+    padding-bottom: 10px;
+  }
+
+  ul i {
+    font-size: 20px;
+    padding-right: 2px;
+    color: var(--color-secondary);
+  }
+
+  p {
+    font-style: italic;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+
+    .btn-resume {
+      --mpc-bg-color-btn: var(--color-secondary);
+      --mpc-text-color-btn: white;
+      --mpc-bg-color-btn-hover: var(--color-primary);
+    }
+
+    @media screen and (max-width: 991.98px) {
+      justify-content: center;
+      flex-direction: column;
+      width: 100%;
+    }
+  }
+}

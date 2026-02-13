@@ -14,7 +14,7 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     routerEventsSubject = new Subject();
-    
+
     mockRouter = {
       navigate: jest.fn(),
       events: routerEventsSubject.asObservable(),
@@ -41,52 +41,52 @@ describe('AppComponent', () => {
     fixture.detectChanges();
   });
 
-  it('deve criar o componente', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('deve ter as abas de navegação configuradas', () => {
-    expect(component['abas']).toBeDefined();
-    expect(component['abas'].length).toBeGreaterThan(0);
+  it('should have navigation tabs configured', () => {
+    expect(component['tabs']).toBeDefined();
+    expect(component['tabs'].length).toBeGreaterThan(0);
   });
 
-  it('deve chamar loaderService.show no ngOnInit', () => {
+  it('should call loaderService.show on ngOnInit', () => {
     component.ngOnInit();
     expect(mockLoaderService.show).toHaveBeenCalled();
   });
 
-  it('deve chamar loaderService.hide após timeout', () => {
+  it('should call loaderService.hide after timeout', () => {
     jest.useFakeTimers();
     component.ngOnInit();
-    
+
     jest.advanceTimersByTime(2000);
-    
+
     expect(mockLoaderService.hide).toHaveBeenCalled();
     jest.useRealTimers();
   });
 
-  it('deve fazer scroll para o topo quando NavigationEnd ocorrer no browser', () => {
+  it('should scroll to top when NavigationEnd occurs in browser', () => {
     const scrollToSpy = jest.fn();
     Object.defineProperty(window, 'scrollTo', { value: scrollToSpy });
-    
+
     component.ngOnInit();
-    
+
     const navigationEnd = new NavigationEnd(1, '/', '/');
     routerEventsSubject.next(navigationEnd);
-    
+
     expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
   });
 
-  it('deve abrir WhatsApp em nova aba quando abrirWhatsApp for chamado no browser', () => {
+  it('should open WhatsApp in new tab when openWhatsApp is called in browser', () => {
     const openSpy = jest.fn();
     Object.defineProperty(window, 'open', { value: openSpy });
-    
-    component['abrirWhatsApp']();
-    
+
+    component['openWhatsApp']();
+
     expect(openSpy).toHaveBeenCalledWith('https://wa.me/55639992014337', '_blank');
   });
 
-  describe('Cenários de plataforma server', () => {
+  describe('Server platform scenarios', () => {
     let serverComponent: AppComponent;
     let serverFixture: ComponentFixture<AppComponent>;
     let serverRouterEventsSubject: Subject<any>;
@@ -94,15 +94,15 @@ describe('AppComponent', () => {
 
     beforeEach(async () => {
       serverRouterEventsSubject = new Subject();
-      
+
       serverMockRouter = {
         navigate: jest.fn(),
         events: serverRouterEventsSubject.asObservable(),
         url: '/'
       } as any;
-      
+
       await TestBed.resetTestingModule();
-      
+
       await TestBed.configureTestingModule({
         imports: [AppComponent],
         providers: [
@@ -116,24 +116,24 @@ describe('AppComponent', () => {
       serverComponent = serverFixture.componentInstance;
     });
 
-    it('não deve fazer scroll quando não estiver no browser', () => {
+    it('should not scroll when not in browser', () => {
       const scrollToSpy = jest.fn();
       Object.defineProperty(window, 'scrollTo', { value: scrollToSpy });
-      
+
       serverComponent.ngOnInit();
-      
+
       const navigationEnd = new NavigationEnd(1, '/', '/');
       serverRouterEventsSubject.next(navigationEnd);
-      
+
       expect(scrollToSpy).not.toHaveBeenCalled();
     });
 
-    it('não deve abrir WhatsApp quando não estiver no browser', () => {
+    it('should not open WhatsApp when not in browser', () => {
       const openSpy = jest.fn();
       Object.defineProperty(window, 'open', { value: openSpy });
-      
-      serverComponent['abrirWhatsApp']();
-      
+
+      serverComponent['openWhatsApp']();
+
       expect(openSpy).not.toHaveBeenCalled();
     });
   });

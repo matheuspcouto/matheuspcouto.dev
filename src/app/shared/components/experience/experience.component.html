@@ -1,0 +1,46 @@
+<section class="experience" id="experience">
+  <div class="container">
+
+    <div class="section-title">
+      <h2>Experience</h2>
+    </div>
+
+    <mpc-tabs [tabs]="tabs" (tabSelected)="selectedTab = $event"></mpc-tabs>
+
+    <div class="row">
+      @if (selectedTab?.id === 'education') {
+      <div class="col-lg-12" data-aos="fade-up">
+        <mpc-card-evento>
+          <div card-body>
+            <h4>Bachelor's degree, Information Systems</h4>
+            <h5>UNITINS</h5>
+            <ul>
+              <li>I was an outstanding student in several subjects, in addition to completing my final thesis with the highest grade and having the article based on it approved by IJDR.</li>
+            </ul>
+            <span>January 2018 - December 2021</span>
+          </div>
+        </mpc-card-evento>
+      </div>
+      }
+
+      @if (selectedTab?.id === 'professional-experience') {
+      <div class="col-lg-12" data-aos="fade-up">
+        @for (work of workExperiences; track $index) {
+        <mpc-card-evento>
+          <div card-body>
+            <h4>{{ work.title }}</h4>
+            <h5>{{ work.company }}</h5>
+            <ul>
+              @for (activity of work.activities; track $index) {
+              <li>{{activity}}</li>
+              }
+            </ul>
+            <span>{{ work.period }}</span>
+          </div>
+        </mpc-card-evento>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</section>
