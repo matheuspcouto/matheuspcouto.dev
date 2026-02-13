@@ -210,8 +210,7 @@ The project uses **mpc-lib-angular** (v0.2.3) - a custom Angular component libra
 - Email: matheuspcouto70@gmail.com
 - GitHub: [@matheuspcouto](https://github.com/matheuspcouto)
 - LinkedIn: [matheuspcouto](https://www.linkedin.com/in/matheuspcouto/)
-- Portfolio: [matheuspcouto.dev](https://matheuspcouto.dev)
-
+- Instagram: [matheuspcouto](https://www.instagram.com/matheuspcouto/)
 ---
 
 ⭐ **matheuspcouto.dev** - Professional Portfolio | Built with Angular, TypeScript, and ❤️
