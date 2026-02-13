@@ -1,4 +1,4 @@
-# 💼 Portfolio - Matheus Pimentel Couto
+# 💼 Portfolio - Matheus Pimentel Do Couto
 
 > **Professional Portfolio Website** - Showcasing my journey in technology
 
