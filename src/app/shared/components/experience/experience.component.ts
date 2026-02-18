@@ -83,6 +83,7 @@ export class ExperienceComponent {
         company: 'Nava | Tech for Business',
         activities: [
           'I worked on a migration and technological evolution of over five hundred Microservices and REST APIs in Java, Node, and Angular applications for the company Bradesco Seguros, which are used by thousands of users in Brazil',
+          "I was one of the pioneering engineers in the certification of Sphere AI, NAVA's artificial intelligence tool.",
           'Used the support of AI agents such as Amazon Q Developer and GitHub Copilot',
           'Configured and monitored the deployment process in CI/CD pipelines with quality gate validation using tools like SonarQube, Fortify, and Amazon Inspector',
           'Supervised other junior developers with code review and mentoring',

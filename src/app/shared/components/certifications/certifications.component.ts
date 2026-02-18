@@ -42,10 +42,27 @@ export class CertificationsComponent {
         url: 'https://www.udemy.com/certificate/UC-0f71c539-372d-493c-9ac1-4dfafc3cac84/'
       },
       {
+        title: 'Angular Academy | Impacta',
+        icon: 'bi bi-filetype-js',
+        completionDate: 'November - 2021',
+      },
+      {
+        title: 'Microsoft Azure: The Complete Guide | Udemy',
+        icon: 'bi bi-microsoft',
+        completionDate: 'July - 2023',
+        url: 'https://udemy.com/certificate/UC-1293e798-05f5-488d-9671-1713dfa4bc98/'
+      },
+      {
         title: 'Spring Framework 5 | Udemy',
         icon: 'bi bi-filetype-java',
         completionDate: 'April - 2023',
         url: 'https://www.udemy.com/certificate/UC-090f45ab-bc0d-4016-bfd0-d11df6ade4d4/'
+      },
+      {
+        title: 'Complete Web Development | Udemy',
+        icon: 'bi bi-filetype-html',
+        completionDate: 'January - 2023',
+        url: 'https://udemy.com/certificate/UC-4601788e-45e3-4e71-accd-605b4e735b1e/'
       },
       {
         title: 'JSF for Beginners | Udemy',
@@ -72,17 +89,6 @@ export class CertificationsComponent {
         url: 'https://www.udemy.com/certificate/UC-a470165f-fc55-40c0-a3ad-849931e5e865/'
       },
       {
-        title: 'Angular Academy | Impacta',
-        icon: 'bi bi-filetype-js',
-        completionDate: 'November - 2021',
-      },
-      {
-        title: 'Complete Web Development | Udemy',
-        icon: 'bi bi-filetype-html',
-        completionDate: 'January - 2023',
-        url: 'https://udemy.com/certificate/UC-4601788e-45e3-4e71-accd-605b4e735b1e/'
-      },
-      {
         title: 'Complete Git | Udemy',
         icon: 'bi bi-git',
         completionDate: 'May - 2023',
@@ -93,12 +99,6 @@ export class CertificationsComponent {
         icon: 'bi bi-gear',
         completionDate: 'June - 2023',
         url: 'https://www.udemy.com/certificate/UC-d1ef9257-c9ed-4253-af57-1228cc4dc14f/'
-      },
-      {
-        title: 'Microsoft Azure: The Complete Guide | Udemy',
-        icon: 'bi bi-microsoft',
-        completionDate: 'July - 2023',
-        url: 'https://udemy.com/certificate/UC-1293e798-05f5-488d-9671-1713dfa4bc98/'
       },
       {
         title: 'HPE Fortify - Secure Code Analysis | Udemy',
