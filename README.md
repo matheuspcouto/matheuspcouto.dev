@@ -1,8 +1,10 @@
-# 💼 Portfolio - Matheus Pimentel Couto
+# 💼 Portfolio - Matheus Pimentel Do Couto
 
 > **Professional Portfolio Website** - Showcasing my journey in technology
 
-**matheuspcouto.dev** is a modern portfolio website built with Angular that highlights my professional trajectory, certifications, technical skills, and projects. Through a clean and responsive design, I present my passion for technology and my dedication to creating innovative and impactful solutions.
+My personal portfolio is a modern web application built with Angular, designed to showcase my professional journey, certifications, technical expertise, and key projects through a clean, responsive, and performance-focused interface.
+
+The platform strengthened my professional positioning by improving how recruiters and companies visualize my experience, technical depth, and measurable results. With a structured presentation of projects and a clear value proposition, it enhanced engagement and contributed to a higher conversion rate on LinkedIn, increasing profile visits and professional opportunities.
 
 ## 📑 Table of Contents
 
@@ -210,8 +212,7 @@ The project uses **mpc-lib-angular** (v0.2.3) - a custom Angular component libra
 - Email: matheuspcouto70@gmail.com
 - GitHub: [@matheuspcouto](https://github.com/matheuspcouto)
 - LinkedIn: [matheuspcouto](https://www.linkedin.com/in/matheuspcouto/)
-- Portfolio: [matheuspcouto.dev](https://matheuspcouto.dev)
-
+- Instagram: [matheuspcouto](https://www.instagram.com/matheuspcouto/)
 ---
 
 ⭐ **matheuspcouto.dev** - Professional Portfolio | Built with Angular, TypeScript, and ❤️
