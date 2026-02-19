@@ -42,16 +42,16 @@ export class ProjectsComponent {
         image: 'assets/img/projects/site-imep.png',
       },
       {
-        title: 'Personal Portfolio',
-        description: 'My portfolio aims to highlight my professional trajectory and training, where I showcase my certificates and skills, and proudly present the projects I have worked on. Through it, I seek to convey my passion for the technology field and my dedication to creating innovative and impactful solutions.',
+        title: 'MPC Components',
+        description: 'MPC Components is a comprehensive Angular library featuring a collection of reusable components for web applications, including inputs, buttons, cards, modals, loaders, navigation, and more. The goal is to streamline the development of modern, responsive, and standardized interfaces.',
         technologies: [
           'https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white',
           'https://img.shields.io/badge/CSS3-blue?style=for-the-badge&logo=css3&logoColor=white',
           'https://img.shields.io/badge/Angular-6A0000?style=for-the-badge&logo=Angular&logoColor=white',
           'https://img.shields.io/badge/Github-black?style=for-the-badge&logo=Github&logoColor=white',
         ],
-        url: 'https://matheuspcouto-dev.vercel.app/',
-        image: 'assets/img/projects/portfolio.png',
+        url: 'https://mpc-components.vercel.app',
+        image: 'assets/img/projects/mpc-components.png',
       },
       {
         title: 'Portfolio - Hávyla Ferreira',
@@ -75,7 +75,7 @@ export class ProjectsComponent {
           'https://img.shields.io/badge/CSS3-blue?style=for-the-badge&logo=css3&logoColor=white',
         ],
         url: 'https://github.com/matheuspcouto/Projeto-Irrigacao',
-        image: 'assets/img/projects/irriot.png',
+        image: 'assets/img/projects/irriot.jpg',
       },
     ];
   }
