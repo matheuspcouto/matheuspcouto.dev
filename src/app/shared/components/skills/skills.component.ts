@@ -94,7 +94,7 @@ export class SkillsComponent {
       {
         title: 'Languages',
         icon: 'bi bi-globe',
-        items: ['English - Intermediate (B1)'],
+        items: ['English - Upper Intermediate (B2)'],
       },
     ];
   }
