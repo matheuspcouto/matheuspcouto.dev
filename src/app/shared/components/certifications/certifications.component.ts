@@ -36,6 +36,12 @@ export class CertificationsComponent {
   constructor() {
     this.certifications = [
       {
+        title: 'AWS Partner: Technical Accredited | AWS',
+        icon: 'bi bi-amazon',
+        completionDate: 'February - 2026',
+        url: 'https://www.credly.com/badges/4d1ae9e7-4fae-496d-b6bf-71db9e586bbd/linked_in_profile'
+      },
+      {
         title: 'Java Programming - Basic to Advanced | Udemy',
         icon: 'bi bi-filetype-java',
         completionDate: 'October - 2022',
