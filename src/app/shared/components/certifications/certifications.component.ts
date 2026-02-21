@@ -141,10 +141,10 @@ export class CertificationsComponent {
         completionDate: 'November - 2020',
       },
       {
-        title: 'Intermediate English (B1) | Education First',
+        title: 'Upper Intermediate English (B2) | Education First',
         icon: 'bi bi-translate',
-        completionDate: 'May - 2022',
-        url: 'https://www.efset.org/cert/EqCQ9H'
+        completionDate: 'Feb - 2026',
+        url: 'https://cert.efset.org/EqCQ9H'
       },
       {
         title: 'Data Protection General Law | Nava',
