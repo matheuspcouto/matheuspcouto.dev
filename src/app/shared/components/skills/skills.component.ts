@@ -53,6 +53,7 @@ export class SkillsComponent {
       '> Git',
       '- Github | Bitbucket',
       '> Jira | Confluence | Bamboo',
+      '> CI/CD',
       '> Azure | AWS',
       '> SonarQube | Fortify'
     ];
@@ -87,7 +88,7 @@ export class SkillsComponent {
         items: TESTING,
       },
       {
-        title: 'DevOps & Agile',
+        title: 'Cloud, DevOps & Tools',
         icon: 'bi bi-git',
         items: DEVOPS,
       },
