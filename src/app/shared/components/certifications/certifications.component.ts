@@ -36,6 +36,18 @@ export class CertificationsComponent {
   constructor() {
     this.certifications = [
       {
+        title: 'AWS Cloud Quest: Cloud Practitioner | AWS',
+        icon: 'bi bi-amazon',
+        completionDate: 'March - 2026',
+        url: 'https://www.credly.com/badges/7e118640-f8a7-47d6-b15e-be6aa6448491'
+      },
+      {
+        title: 'AWS Cloud Quest: Generative AI Practitioner | AWS',
+        icon: 'bi bi-amazon',
+        completionDate: 'March - 2026',
+        url: 'https://www.credly.com/badges/f6382a54-eb8f-43a8-98e0-93d990012c33'
+      },
+      {
         title: 'AWS Partner: Technical Accredited | AWS',
         icon: 'bi bi-amazon',
         completionDate: 'February - 2026',
