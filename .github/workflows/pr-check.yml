@@ -1,7 +1,15 @@
 # =============================================================================
 # Code Check (PR Validation)
 #
-# Consumes the reusable workflow code-check.yml from avodah-docs-devops.
+# Standalone workflow replicating avodah-docs-devops/code-check.yml
+# for public repositories.
+#
+# Jobs (parallelized):
+#   1. audit      → npm audit (dependency vulnerabilities)
+#   2. gitleaks   → Gitleaks (secrets detection)
+#   3. lint       → ESLint (code quality)
+#   4. test       → Unit tests + coverage
+#   5. build      → TypeScript compilation + artifact validation
 #
 # Granular skip per job (via PR labels):
 #   skip-audit     → skip dependency audit
@@ -24,10 +32,257 @@ permissions:
   contents: read
   actions: read
 
+env:
+  NODE_VERSION: '24.13.0'
+  COVERAGE_THRESHOLD: 80
+  AUDIT_LEVEL: 'high'
+  INSTALL_COMMAND: 'npm install --legacy-peer-deps'
+
 jobs:
-  code-check:
-    uses: matheuspcouto/avodah-docs-devops/.github/workflows/code-check.yml@main
-    with:
-      node-version: '24.13.0'
-      coverage-threshold: 80
-      install-command: 'npm install --legacy-peer-deps'
+  # ---------------------------------------------------------------------------
+  # JOB 1: Dependency Audit (npm audit)
+  # Skip: label 'skip-audit'
+  # ---------------------------------------------------------------------------
+  audit:
+    name: Dependency Audit
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-audit') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pr-audit-${{ github.event.pull_request.number }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=${{ env.AUDIT_LEVEL }}
+          echo "✅ No high or critical vulnerabilities found"
+
+  # ---------------------------------------------------------------------------
+  # JOB 2: Secrets Detection (Gitleaks)
+  # Skip: label 'skip-gitleaks'
+  # ---------------------------------------------------------------------------
+  gitleaks:
+    name: Secrets Detection (Gitleaks)
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-gitleaks') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pr-gitleaks-${{ github.event.pull_request.number }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # JOB 3: Lint (ESLint)
+  # Skip: label 'skip-lint'
+  # ---------------------------------------------------------------------------
+  lint:
+    name: ESLint
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-lint') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pr-lint-${{ github.event.pull_request.number }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run ESLint
+        run: |
+          npm run lint
+          echo "✅ ESLint completed without errors"
+
+  # ---------------------------------------------------------------------------
+  # JOB 4: Unit Tests and Coverage
+  # Skip: label 'skip-tests'
+  # ---------------------------------------------------------------------------
+  test:
+    name: Unit Tests and Coverage
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-tests') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: pr-test-${{ github.event.pull_request.number }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run Unit Tests with Coverage
+        run: |
+          npx vitest run --coverage --reporter=default
+          echo "✅ Tests executed"
+
+      - name: Validate Minimum Coverage
+        run: |
+          COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")
+          THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
+
+          echo "─────────────────────────────────────────────"
+          echo "  🧪 COVERAGE GATE — Minimum coverage check"
+          echo "─────────────────────────────────────────────"
+          echo ""
+          echo "  📊 Current coverage:   ${COVERAGE}%"
+          echo "  🎯 Required minimum:   ${THRESHOLD}%"
+          echo ""
+
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "  ❌ Result: BLOCKED — coverage below minimum"
+            echo ""
+            echo "  💡 Action needed: add tests to reach ${THRESHOLD}% coverage"
+            echo "─────────────────────────────────────────────"
+            exit 1
+          else
+            echo "  ✅ Result: PASSED — coverage meets requirements"
+            echo "─────────────────────────────────────────────"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # JOB 5: Build and Artifact Validation
+  # Skip: label 'skip-build'
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-build') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: pr-build-${{ github.event.pull_request.number }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Check Node and npm versions
+        run: |
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Build Project
+        run: |
+          npm run build
+          echo "✅ Build completed successfully"
+
+      - name: Validate Build Artifacts
+        run: |
+          echo "─────────────────────────────────────────────"
+          echo "  📦 BUILD GATE — Artifact validation"
+          echo "─────────────────────────────────────────────"
+          echo ""
+
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+            echo "  📁 dist/ directory:   missing or empty"
+            echo ""
+            echo "  ❌ Result: BLOCKED — build artifacts not found"
+            echo ""
+            echo "  💡 Action needed: check build script in package.json"
+            echo "─────────────────────────────────────────────"
+            exit 1
+          fi
+
+          FILE_COUNT=$(find dist -type f | wc -l)
+          DIR_SIZE=$(du -sh dist | cut -f1)
+
+          echo "  📁 dist/ directory:   present"
+          echo "  📄 Files:             $FILE_COUNT"
+          echo "  💾 Size:              $DIR_SIZE"
+          echo ""
+          echo "  ✅ Result: PASSED — build artifacts validated"
+          echo "─────────────────────────────────────────────"
+
+  # ---------------------------------------------------------------------------
+  # JOB 6: Summary (Step Summary)
+  # ---------------------------------------------------------------------------
+  summary:
+    name: Code Check Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    needs: [audit, gitleaks, lint, test, build]
+    steps:
+      - name: Generate Summary
+        env:
+          AUDIT_RESULT: ${{ needs.audit.result }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          status_icon() {
+            local result=$1
+            if [[ "$result" == "skipped" ]]; then
+              echo "⏭️ Skipped"
+            elif [[ "$result" == "success" ]]; then
+              echo "✅ Passed"
+            elif [[ "$result" == "failure" ]]; then
+              echo "❌ Failed"
+            else
+              echo "⚠️ $result"
+            fi
+          }
+
+          AUDIT_STATUS=$(status_icon "$AUDIT_RESULT")
+          GITLEAKS_STATUS=$(status_icon "$GITLEAKS_RESULT")
+          LINT_STATUS=$(status_icon "$LINT_RESULT")
+          TEST_STATUS=$(status_icon "$TEST_RESULT")
+          BUILD_STATUS=$(status_icon "$BUILD_RESULT")
+
+          {
+            echo "## ✅ Code Check"
+            echo ""
+            echo "| Check | Status |"
+            echo "|-------|--------|"
+            echo "| Dependency audit | $AUDIT_STATUS |"
+            echo "| Secrets detection | $GITLEAKS_STATUS |"
+            echo "| ESLint | $LINT_STATUS |"
+            echo "| Unit tests | $TEST_STATUS |"
+            echo "| Build | $BUILD_STATUS |"
+          } >> "$GITHUB_STEP_SUMMARY"
