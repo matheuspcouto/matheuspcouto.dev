@@ -11,7 +11,7 @@
 #   - custom-url:  Vercel alias URL (healthcheck)
 #   - access-url:  End user access URL
 #
-# Access: https://matheuspcouto.dev/ (or https://matheuspcouto-dev.vercel.app/)
+# Access: https://matheuspcouto-dev.vercel.app
 #
 # ⚠️ Use skips with caution in production — recommended only for hotfixes
 #    or re-deploys after manual validation.
@@ -68,15 +68,17 @@ jobs:
     if: ${{ !inputs.skip-audit }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     concurrency:
       group: prod-audit-${{ github.run_id }}-${{ github.repository }}
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -94,34 +96,39 @@ jobs:
     if: ${{ !inputs.skip-gitleaks }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     concurrency:
       group: prod-gitleaks-${{ github.run_id }}-${{ github.repository }}
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Detecção de Segredos (Gitleaks)
+        uses: gacts/gitleaks@v1
+        with:
+          fail-on-error: true
+          path: "."
 
   lint:
     name: ESLint
     if: ${{ !inputs.skip-lint }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     concurrency:
       group: prod-lint-${{ github.run_id }}-${{ github.repository }}
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -139,15 +146,17 @@ jobs:
     if: ${{ !inputs.skip-tests }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
     concurrency:
       group: prod-test-${{ github.run_id }}-${{ github.repository }}
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -189,15 +198,17 @@ jobs:
     if: ${{ !inputs.skip-build }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     concurrency:
       group: prod-build-check-${{ github.run_id }}-${{ github.repository }}
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -212,11 +223,30 @@ jobs:
 
       - name: Validate Build Artifacts
         run: |
+          echo "─────────────────────────────────────────────"
+          echo "  📦 BUILD GATE — Artifact validation"
+          echo "─────────────────────────────────────────────"
+          echo ""
+
           if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
-            echo "❌ Build artifacts not found"
+            echo "  📁 dist/ directory:   missing or empty"
+            echo ""
+            echo "  ❌ Result: BLOCKED — build artifacts not found"
+            echo ""
+            echo "  💡 Action needed: check build script in package.json"
+            echo "─────────────────────────────────────────────"
             exit 1
           fi
-          echo "✅ Build artifacts validated"
+
+          FILE_COUNT=$(find dist -type f | wc -l)
+          DIR_SIZE=$(du -sh dist | cut -f1)
+
+          echo "  📁 dist/ directory:   present"
+          echo "  📄 Files:             $FILE_COUNT"
+          echo "  💾 Size:              $DIR_SIZE"
+          echo ""
+          echo "  ✅ Result: PASSED — build artifacts validated"
+          echo "─────────────────────────────────────────────"
 
   code-check-summary:
     name: Code Check Summary
@@ -224,6 +254,8 @@ jobs:
     timeout-minutes: 5
     if: always()
     needs: [audit, gitleaks, lint, test, build-check]
+    permissions:
+      contents: read
     outputs:
       passed: ${{ steps.check.outputs.passed }}
     steps:
@@ -297,6 +329,8 @@ jobs:
     timeout-minutes: 20
     needs: code-check-summary
     if: always() && needs.code-check-summary.outputs.passed == 'true'
+    permissions:
+      contents: read
     environment:
       name: production
     concurrency:
@@ -304,10 +338,10 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -491,10 +525,14 @@ jobs:
           set -euo pipefail
           CUSTOM_URL="${{ steps.custom-url.outputs.custom-url }}"
 
-          echo "🔍 Running healthcheck on https://$CUSTOM_URL"
+          echo "🔍 Running healthcheck on https://$CUSTOM_URL (following redirects)"
 
           for i in $(seq 1 6); do
-            HTTP_CODE=$(curl -sS -o /dev/null -w "%{http_code}" "https://$CUSTOM_URL" || echo "000")
+            if HTTP_CODE=$(curl -sS -L -o /dev/null -w "%{http_code}" "https://$CUSTOM_URL"); then
+              :
+            else
+              HTTP_CODE="000"
+            fi
             if [[ "$HTTP_CODE" == "200" ]]; then
               break
             fi
