@@ -127,12 +127,14 @@ describe('NavbarComponent', () => {
       beforeEach(() => {
         // Mock window.scrollTo
         vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
-        // Mock requestAnimationFrame para executar callback uma vez e parar a recursão
-        let called = false;
+        // Mock requestAnimationFrame para executar a animação até o fim
+        let calls = 0;
         vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
-          if (!called) {
-            called = true;
-            cb(1000); // Passa tempo suficiente para completar animação
+          calls++;
+          if (calls === 1) {
+            cb(1000);
+          } else if (calls === 2) {
+            cb(1300);
           }
           return 0;
         });
