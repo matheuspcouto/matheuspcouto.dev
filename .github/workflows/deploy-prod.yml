@@ -1,7 +1,9 @@
 # =============================================================================
 # Deploy to PROD
 #
-# Consumes reusable workflows from avodah-docs-devops.
+# Standalone workflow replicating avodah-docs-devops workflows
+# for public repositories.
+#
 # Trigger: workflow_dispatch only (manual).
 # Flow: code-check → frontend-deploy (build + deploy)
 #
@@ -9,7 +11,7 @@
 #   - custom-url:  Vercel alias URL (healthcheck)
 #   - access-url:  End user access URL
 #
-# Access: https://matheuspcouto.dev/ (or https://matheuspcouto-dev.vercel.app/)
+# Access: https://matheuspcouto-dev.vercel.app
 #
 # ⚠️ Use skips with caution in production — recommended only for hotfixes
 #    or re-deploys after manual validation.
@@ -46,28 +48,527 @@ on:
         type: boolean
         default: false
 
+env:
+  NODE_VERSION: '24.13.0'
+  COVERAGE_THRESHOLD: 80
+  AUDIT_LEVEL: 'high'
+  INSTALL_COMMAND: 'npm install --legacy-peer-deps'
+  VERCEL_CLI_VERSION: '54'
+  DEPLOY_ENV: 'production'
+  CUSTOM_URL: 'matheuspcouto-dev.vercel.app'
+  ACCESS_URL: 'https://matheuspcouto-dev.vercel.app/'
+
 jobs:
-  code-check:
-    uses: matheuspcouto/avodah-docs-devops/.github/workflows/code-check.yml@main
-    with:
-      node-version: '24.13.0'
-      coverage-threshold: 80
-      install-command: 'npm install --legacy-peer-deps'
-      skip-audit: ${{ inputs.skip-audit || false }}
-      skip-gitleaks: ${{ inputs.skip-gitleaks || false }}
-      skip-lint: ${{ inputs.skip-lint || false }}
-      skip-tests: ${{ inputs.skip-tests || false }}
-      skip-build: ${{ inputs.skip-build || false }}
+  # ===========================================================================
+  # CODE CHECK JOBS
+  # ===========================================================================
+
+  audit:
+    name: Dependency Audit
+    if: ${{ !inputs.skip-audit }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    concurrency:
+      group: prod-audit-${{ github.run_id }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=${{ env.AUDIT_LEVEL }}
+          echo "✅ No high or critical vulnerabilities found"
+
+  gitleaks:
+    name: Secrets Detection (Gitleaks)
+    if: ${{ !inputs.skip-gitleaks }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    concurrency:
+      group: prod-gitleaks-${{ github.run_id }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detecção de Segredos (Gitleaks)
+        uses: gacts/gitleaks@v1
+        with:
+          fail-on-error: true
+          path: "."
+
+  lint:
+    name: ESLint
+    if: ${{ !inputs.skip-lint }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    concurrency:
+      group: prod-lint-${{ github.run_id }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run ESLint
+        run: |
+          npm run lint
+          echo "✅ ESLint completed without errors"
+
+  test:
+    name: Unit Tests and Coverage
+    if: ${{ !inputs.skip-tests }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    concurrency:
+      group: prod-test-${{ github.run_id }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Run Unit Tests with Coverage
+        run: |
+          npx vitest run --coverage --reporter=default
+          echo "✅ Tests executed"
+
+      - name: Validate Minimum Coverage
+        run: |
+          COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")
+          THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
+
+          echo "─────────────────────────────────────────────"
+          echo "  🧪 COVERAGE GATE — Minimum coverage check"
+          echo "─────────────────────────────────────────────"
+          echo ""
+          echo "  📊 Current coverage:   ${COVERAGE}%"
+          echo "  🎯 Required minimum:   ${THRESHOLD}%"
+          echo ""
+
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "  ❌ Result: BLOCKED — coverage below minimum"
+            echo ""
+            echo "  💡 Action needed: add tests to reach ${THRESHOLD}% coverage"
+            echo "─────────────────────────────────────────────"
+            exit 1
+          else
+            echo "  ✅ Result: PASSED — coverage meets requirements"
+            echo "─────────────────────────────────────────────"
+          fi
+
+  build-check:
+    name: Build Check
+    if: ${{ !inputs.skip-build }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    concurrency:
+      group: prod-build-check-${{ github.run_id }}-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Build Project
+        run: |
+          npm run build
+          echo "✅ Build completed successfully"
+
+      - name: Validate Build Artifacts
+        run: |
+          echo "─────────────────────────────────────────────"
+          echo "  📦 BUILD GATE — Artifact validation"
+          echo "─────────────────────────────────────────────"
+          echo ""
+
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+            echo "  📁 dist/ directory:   missing or empty"
+            echo ""
+            echo "  ❌ Result: BLOCKED — build artifacts not found"
+            echo ""
+            echo "  💡 Action needed: check build script in package.json"
+            echo "─────────────────────────────────────────────"
+            exit 1
+          fi
+
+          FILE_COUNT=$(find dist -type f | wc -l)
+          DIR_SIZE=$(du -sh dist | cut -f1)
+
+          echo "  📁 dist/ directory:   present"
+          echo "  📄 Files:             $FILE_COUNT"
+          echo "  💾 Size:              $DIR_SIZE"
+          echo ""
+          echo "  ✅ Result: PASSED — build artifacts validated"
+          echo "─────────────────────────────────────────────"
+
+  code-check-summary:
+    name: Code Check Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    needs: [audit, gitleaks, lint, test, build-check]
+    permissions:
+      contents: read
+    outputs:
+      passed: ${{ steps.check.outputs.passed }}
+    steps:
+      - name: Check Results
+        id: check
+        env:
+          AUDIT_RESULT: ${{ needs.audit.result }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          BUILD_RESULT: ${{ needs.build-check.result }}
+        run: |
+          FAILED=false
+
+          for result in "$AUDIT_RESULT" "$GITLEAKS_RESULT" "$LINT_RESULT" "$TEST_RESULT" "$BUILD_RESULT"; do
+            if [[ "$result" == "failure" ]]; then
+              FAILED=true
+              break
+            fi
+          done
+
+          if [[ "$FAILED" == "true" ]]; then
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Code check failed"
+          else
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "✅ Code check passed"
+          fi
+
+      - name: Generate Summary
+        if: always()
+        env:
+          AUDIT_RESULT: ${{ needs.audit.result }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          BUILD_RESULT: ${{ needs.build-check.result }}
+        run: |
+          status_icon() {
+            local result=$1
+            if [[ "$result" == "skipped" ]]; then
+              echo "⏭️ Skipped"
+            elif [[ "$result" == "success" ]]; then
+              echo "✅ Passed"
+            elif [[ "$result" == "failure" ]]; then
+              echo "❌ Failed"
+            else
+              echo "⚠️ $result"
+            fi
+          }
+
+          {
+            echo "## 🔍 Code Check"
+            echo ""
+            echo "| Check | Status |"
+            echo "|-------|--------|"
+            echo "| Dependency audit | $(status_icon "$AUDIT_RESULT") |"
+            echo "| Secrets detection | $(status_icon "$GITLEAKS_RESULT") |"
+            echo "| ESLint | $(status_icon "$LINT_RESULT") |"
+            echo "| Unit tests | $(status_icon "$TEST_RESULT") |"
+            echo "| Build | $(status_icon "$BUILD_RESULT") |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ===========================================================================
+  # DEPLOY JOB
+  # ===========================================================================
 
   deploy:
-    needs: code-check
-    if: always() && !contains(needs.code-check.result, 'failure')
-    uses: matheuspcouto/avodah-docs-devops/.github/workflows/frontend-deploy.yml@main
-    with:
-      deploy-env: 'production'
-      custom-url: 'matheuspcouto-dev.vercel.app'
-      access-url: 'https://matheuspcouto-dev.vercel.app/'
-      git-env: 'production'
-      node-version: '24.13.0'
-      vercel-cli-version: '54'
-    secrets: inherit
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: code-check-summary
+    if: always() && needs.code-check-summary.outputs.passed == 'true'
+    permissions:
+      contents: read
+    environment:
+      name: production
+    concurrency:
+      group: production-deployment-${{ github.repository }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: ${{ env.INSTALL_COMMAND }}
+
+      - name: Install Vercel CLI
+        run: |
+          npm install -g "vercel@${{ env.VERCEL_CLI_VERSION }}"
+          vercel --version
+
+      - name: Extract Version from package.json
+        id: app-version
+        run: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $APP_VERSION"
+
+      - name: Validate Version (prevent downgrade or duplicate)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          set -euo pipefail
+          LOCAL_VERSION="${{ steps.app-version.outputs.version }}"
+          DEPLOY_TARGET="${{ env.DEPLOY_ENV }}"
+
+          echo "─────────────────────────────────────────────"
+          echo "  🔒 VERSION GATE — Downgrade protection"
+          echo "─────────────────────────────────────────────"
+          echo ""
+          echo "  🌍 Environment:         $DEPLOY_TARGET"
+          echo "  📦 Release:             $LOCAL_VERSION"
+          echo ""
+
+          DEPLOYED_VERSION=$(curl -s \
+            "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}&decrypt=true" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            | node -e "
+              let d='';
+              process.stdin.on('data',c=>d+=c);
+              process.stdin.on('end',()=>{
+                const envs = JSON.parse(d).envs || [];
+                const found = envs.find(e => e.key === 'APP_VERSION' && e.target.includes('${DEPLOY_TARGET}'));
+                process.stdout.write(found ? found.value : '');
+              });
+            ")
+
+          if [[ -z "$DEPLOYED_VERSION" ]]; then
+            echo "  🚀 Current version:     (none found)"
+            echo ""
+            echo "  ✅ Result: ALLOWED — first deploy to this environment"
+            echo "─────────────────────────────────────────────"
+            exit 0
+          fi
+
+          if ! echo "$DEPLOYED_VERSION" | grep -qP '^\d+\.\d+\.\d+$'; then
+            echo "  ⚠️  Current version:    $DEPLOYED_VERSION (invalid/encrypted)"
+            echo ""
+            echo "  ✅ Result: ALLOWED — treating as first deploy"
+            echo "─────────────────────────────────────────────"
+            exit 0
+          fi
+
+          echo "  🚀 Current version:     $DEPLOYED_VERSION"
+          echo ""
+
+          node -e "
+            const local = '$LOCAL_VERSION'.split('.').map(Number);
+            const deployed = '$DEPLOYED_VERSION'.split('.').map(Number);
+
+            for (let i = 0; i < 3; i++) {
+              if (local[i] > deployed[i]) {
+                console.log('  ✅ Result: ALLOWED — release is higher than current');
+                console.log('─────────────────────────────────────────────');
+                process.exit(0);
+              }
+              if (local[i] < deployed[i]) {
+                console.error('  ❌ Result: BLOCKED — release is lower than current (downgrade)');
+                console.error('');
+                console.error('  💡 Action needed: bump version in package.json to > $DEPLOYED_VERSION');
+                console.error('─────────────────────────────────────────────');
+                process.exit(1);
+              }
+            }
+
+            console.error('  ❌ Result: BLOCKED — release equals current version (duplicate)');
+            console.error('');
+            console.error('  💡 Action needed: bump version in package.json before deploy');
+            console.error('─────────────────────────────────────────────');
+            process.exit(1);
+          "
+
+      - name: Sync Environment Variables with Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          APP_VERSION: ${{ steps.app-version.outputs.version }}
+          DEPLOY_TARGET: ${{ env.DEPLOY_ENV }}
+        run: |
+          sync_env_var() {
+            local key=$1
+            local value=$2
+            local target=$3
+            local sensitive=$4
+            local env_type=${5:-"encrypted"}
+
+            if [[ -z "$value" ]]; then
+              echo "⚠️  $key is empty, skipping"
+              return
+            fi
+
+            EXISTING_ID=$(curl -s \
+              "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const envs=JSON.parse(d).envs||[];const found=envs.find(e=>e.key==='${key}'&&e.target.includes('${target}'));process.stdout.write(found?found.id:'');});")
+
+            if [[ -n "$EXISTING_ID" ]]; then
+              curl -s -X DELETE \
+                "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env/${EXISTING_ID}?teamId=${VERCEL_ORG_ID}" \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" > /dev/null
+            fi
+
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_ORG_ID}" \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"key\": \"${key}\",\"value\": \"${value}\",\"type\": \"${env_type}\",\"target\": [\"${target}\"],\"sensitive\": ${sensitive}}")
+
+            if [[ "$HTTP_STATUS" == "200" || "$HTTP_STATUS" == "201" ]]; then
+              echo "✅ ${key} synced (target=${target}, type=${env_type})"
+            else
+              echo "❌ Failed to sync ${key} (HTTP ${HTTP_STATUS})"
+              exit 1
+            fi
+          }
+
+          sync_env_var "APP_VERSION" "$APP_VERSION" "$DEPLOY_TARGET" "false" "plain"
+          echo ""
+          echo "✅ Environment variables synced with Vercel (target: $DEPLOY_TARGET)"
+
+      - name: Build Vercel Output
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel pull --yes --environment=${{ env.DEPLOY_ENV }} --token=$VERCEL_TOKEN
+          vercel build --prod --token=$VERCEL_TOKEN
+          echo "✅ Vercel build completed"
+
+      - name: Deploy to Vercel
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN)
+          echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "✅ Deployed: $DEPLOYMENT_URL"
+
+      - name: Set Custom URL Alias
+        id: custom-url
+        if: success()
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          CUSTOM_URL="${{ env.CUSTOM_URL }}"
+          vercel alias --token=$VERCEL_TOKEN set "${{ steps.deploy.outputs.deployment-url }}" "$CUSTOM_URL"
+          echo "✅ Custom URL set: https://$CUSTOM_URL"
+          echo "custom-url=$CUSTOM_URL" >> $GITHUB_OUTPUT
+
+      - name: Healthcheck
+        id: healthcheck
+        if: success() && steps.custom-url.outcome == 'success'
+        run: |
+          set -euo pipefail
+          CUSTOM_URL="${{ steps.custom-url.outputs.custom-url }}"
+
+          echo "🔍 Running healthcheck on https://$CUSTOM_URL (following redirects)"
+
+          for i in $(seq 1 6); do
+            if HTTP_CODE=$(curl -sS -L -o /dev/null -w "%{http_code}" "https://$CUSTOM_URL"); then
+              :
+            else
+              HTTP_CODE="000"
+            fi
+            if [[ "$HTTP_CODE" == "200" ]]; then
+              break
+            fi
+            echo "  ⏳ Attempt $i/6 — HTTP $HTTP_CODE, waiting 5s..."
+            sleep 5
+          done
+
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "❌ Healthcheck failed: HTTP $HTTP_CODE after 30s"
+            echo "health-status=❌ Failed (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ Healthcheck OK: HTTP $HTTP_CODE"
+            echo "health-status=✅ OK" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Summary
+        if: always() && steps.deploy.outcome == 'success'
+        env:
+          DEPLOY_TARGET: ${{ env.DEPLOY_ENV }}
+          APP_VERSION: ${{ steps.app-version.outputs.version }}
+          CUSTOM_URL: ${{ steps.custom-url.outputs.custom-url }}
+          ACCESS_URL: ${{ env.ACCESS_URL }}
+          HEALTH_STATUS: ${{ steps.healthcheck.outputs.health-status }}
+        run: |
+          {
+            echo "## 🚀 Deploy Successful"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| **Environment** | \`${DEPLOY_TARGET}\` |"
+            echo "| **Release** | \`${APP_VERSION}\` |"
+            echo "| **Vercel URL** | https://${CUSTOM_URL} |"
+            if [[ -n "$ACCESS_URL" ]]; then
+              echo "| **Access URL** | ${ACCESS_URL} |"
+            fi
+            echo "| **Healthcheck** | ${HEALTH_STATUS:-⏭️ Not executed} |"
+            echo "| **Date** | $(date '+%Y-%m-%d %H:%M UTC') |"
+          } >> "$GITHUB_STEP_SUMMARY"
