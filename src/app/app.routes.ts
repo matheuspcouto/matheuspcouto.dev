@@ -1,11 +1,14 @@
+/**
+ * Configuração de rotas da aplicação.
+ *
+ * @author Matheus Pimentel Do Couto
+ */
 import { Routes } from '@angular/router';
-import { RouteSegment } from './shared/enums/routes-enum';
 
 export const routes: Routes = [
-  /*  Routes for Home */
+  /* Rota wildcard - redireciona para home */
   {
-    path: RouteSegment.HOME,
-    pathMatch: 'full',
+    path: '**',
     redirectTo: ''
   }
 ];

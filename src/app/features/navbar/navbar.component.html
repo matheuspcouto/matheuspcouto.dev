@@ -1,0 +1,65 @@
+<!-- ======= Header Desktop ======= -->
+<header class="header-desktop" tabindex="0" aria-label="Barra de Navegação">
+  <div class="container">
+    <!-- Logo -->
+    <a (click)="navegarParaHome()" (keydown.enter)="navegarParaHome()" class="logo" tabindex="0"
+      aria-label="Logo - Ir para o início" role="button">
+      <img [src]="logo()" alt="Logo" />
+    </a>
+
+    <!-- Menu Desktop -->
+    <nav id="navbar" class="navbar" role="navigation">
+      <ul role="menubar">
+        @for (item of items(); track item.id) {
+        <li tabindex="0" [attr.aria-label]="'Aba ' + item.label" role="none">
+          <a (click)="navegarParaAba(item)" (keydown.enter)="navegarParaAba(item)" [class.aba-ativa]="isAbaAtiva(item)"
+            role="menuitem" tabindex="0" [attr.aria-current]="isAbaAtiva(item) ? 'page' : null">
+            {{ item.label }}
+          </a>
+        </li>
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+<!-- ======= End Header Desktop ======= -->
+
+<!-- ======= Header Mobile ======= -->
+<header class="header-mobile" tabindex="0" aria-label="Barra de Navegação">
+  <div class="container">
+    <!-- Logo -->
+    <a (click)="navegarParaHome()" (keydown.enter)="navegarParaHome()" class="logo" tabindex="0"
+      aria-label="Logo - Ir para o início" role="button">
+      <img [src]="logo()" alt="Logo" />
+    </a>
+
+    <!-- Botão Hamburger - alterna ícone baseado no estado -->
+    <button type="button" class="mobile-nav-toggle"
+      [class.bi-list]="!isMenuOpen()" [class.bi-x]="isMenuOpen()"
+      data-bs-toggle="offcanvas" data-bs-target="#menuLateral"
+      [attr.aria-expanded]="isMenuOpen()"
+      [attr.aria-label]="!isMenuOpen() ? 'Abrir Menu Lateral' : 'Fechar Menu Lateral'"
+      aria-controls="menuLateral"></button>
+
+    <!-- Menu Lateral usando Bootstrap Offcanvas -->
+    <div class="offcanvas offcanvas-end" data-bs-backdrop="true" id="menuLateral">
+      <div class="offcanvas-body">
+        <ul role="menu">
+          @for (item of items(); track item.id) {
+          <li tabindex="0" [attr.aria-label]="'Aba ' + item.label" role="none">
+            <a (click)="navegarParaAbaMobile(item)"
+              (keydown.enter)="navegarParaAbaMobile(item)"
+              [class.aba-ativa]="isAbaAtiva(item)" role="menuitem" tabindex="0"
+              data-bs-dismiss="offcanvas"
+              [attr.aria-current]="isAbaAtiva(item) ? 'page' : null">
+              <i [class]="item.icon" aria-hidden="true"></i>
+              {{ item.label }}
+            </a>
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- ======= End Header Mobile ======= -->

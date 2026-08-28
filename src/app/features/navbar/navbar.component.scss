@@ -1,0 +1,206 @@
+/*--------------------------------------------------------------
+# Geral
+--------------------------------------------------------------*/
+:host {
+  /* Cores */
+  --mpc-color-bg-header: white;
+  --mpc-color-text-default: var(--color-primary);
+  --mpc-color-text-active: var(--color-secondary);
+  --mpc-color-border-active: var(--color-secondary);
+
+  /* Fontes */
+  --mpc-font-navbar: var(--font-subtitle);
+
+  display: block;
+}
+
+:host ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+:host a {
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--mpc-color-text-default);
+  font-family: var(--mpc-font-navbar);
+}
+
+/*--------------------------------------------------------------
+# Header & Container
+--------------------------------------------------------------*/
+:host header {
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--mpc-color-bg-header);
+  transition: all 0.5s;
+  z-index: 99999;
+  height: 90px;
+}
+
+@media (max-width: 575px) {
+  :host header {
+    height: 70px;
+  }
+}
+
+:host header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/*--------------------------------------------------------------
+# Logo
+--------------------------------------------------------------*/
+:host .logo {
+  margin-right: auto;
+}
+
+:host .logo img {
+  max-height: 50px;
+  margin-right: 6px;
+  border-radius: 50%;
+}
+
+@media screen and (max-width: 991.98px) {
+  :host .logo img {
+    max-height: 40px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Mobile
+--------------------------------------------------------------*/
+@media (max-width: 991.98px) {
+  :host .header-mobile {
+    display: flex !important;
+  }
+
+  :host .header-desktop {
+    display: none !important;
+  }
+
+  /* Botão Hamburger */
+  :host .mobile-nav-toggle {
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 0;
+    z-index: 9999;
+    margin: 0 10px 0 20px;
+    border: none !important;
+    background: none !important;
+    color: var(--mpc-color-text-default);
+  }
+
+  /* Menu Lateral */
+  :host .offcanvas {
+    max-width: 65%;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  :host .offcanvas.offcanvas-end {
+    transform: translateX(100%);
+  }
+
+  :host .offcanvas.offcanvas-end.show {
+    transform: translateX(0);
+  }
+
+  /* Backdrop com transição */
+  ::ng-deep .offcanvas-backdrop {
+    transition: opacity 0.4s ease-in-out;
+  }
+
+  :host .offcanvas .offcanvas-body {
+    padding: 1rem !important;
+    margin-top: 4rem;
+  }
+
+  /* Abas Mobile */
+  :host .offcanvas li a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 2px solid transparent;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--mpc-color-text-default);
+  }
+
+  :host .offcanvas li a i {
+    color: var(--mpc-color-text-default);
+  }
+
+  /* Aba ativa Mobile */
+  :host .offcanvas li a.aba-ativa {
+    color: var(--mpc-color-text-active) !important;
+    border-bottom: 2px solid var(--mpc-color-border-active) !important;
+  }
+
+  :host .offcanvas li a.aba-ativa i {
+    color: var(--mpc-color-text-active) !important;
+  }
+}
+
+/*--------------------------------------------------------------
+# Desktop Navigation
+--------------------------------------------------------------*/
+@media screen and (min-width: 992px) {
+  :host .header-mobile {
+    display: none !important;
+  }
+
+  :host .header-desktop {
+    display: flex !important;
+  }
+
+  :host .navbar {
+    padding: 0;
+  }
+
+  :host .navbar ul {
+    display: flex;
+  }
+
+  :host .navbar ul li {
+    position: relative;
+    white-space: nowrap;
+    padding: 10px 0 10px 28px;
+  }
+
+  /* Abas Desktop */
+  :host .navbar a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px;
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    position: relative;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    color: var(--mpc-color-text-default);
+  }
+
+  /* Hover - apenas linha embaixo */
+  :host .navbar a:hover {
+    border-bottom: 2px solid var(--mpc-color-border-active);
+  }
+
+  /* Aba ativa Desktop - apenas linha embaixo */
+  :host .navbar a.aba-ativa {
+    border-bottom: 2px solid var(--mpc-color-border-active);
+  }
+}

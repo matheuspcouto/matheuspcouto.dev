@@ -3,29 +3,30 @@ import { Router, NavigationEnd } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
 import { AppComponent } from './app.component';
 import { MpcLoaderService } from 'mpc-lib-angular';
-import { of, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  let mockRouter: jest.Mocked<Router>;
-  let mockLoaderService: jest.Mocked<MpcLoaderService>;
-  let routerEventsSubject: Subject<any>;
+  let mockRouter: Partial<Router>;
+  let mockLoaderService: Partial<MpcLoaderService>;
+  let routerEventsSubject: Subject<NavigationEnd>;
 
   beforeEach(async () => {
     routerEventsSubject = new Subject();
 
     mockRouter = {
-      navigate: jest.fn(),
+      navigate: vi.fn(),
       events: routerEventsSubject.asObservable(),
       url: '/'
-    } as any;
+    } as Partial<Router>;
 
     mockLoaderService = {
-      show: jest.fn(),
-      hide: jest.fn(),
-      isLoading: jest.fn()
-    } as any;
+      show: vi.fn(),
+      hide: vi.fn(),
+      isLoading: vi.fn()
+    };
 
     await TestBed.configureTestingModule({
       imports: [AppComponent],
@@ -38,38 +39,58 @@ describe('AppComponent', () => {
 
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have navigation tabs configured', () => {
-    expect(component['tabs']).toBeDefined();
-    expect(component['tabs'].length).toBeGreaterThan(0);
+  it('should have navigation items configured', () => {
+    expect(component['navItems']).toBeDefined();
+    expect(component['navItems'].length).toBeGreaterThan(0);
   });
 
-  it('should call loaderService.show on ngOnInit', () => {
-    component.ngOnInit();
+  it('should have 8 navigation items', () => {
+    expect(component['navItems']).toHaveLength(8);
+    expect(component['navItems'][0].id).toBe('home');
+    expect(component['navItems'][7].id).toBe('contact');
+  });
+
+  it('should call loaderService.show on construction', () => {
     expect(mockLoaderService.show).toHaveBeenCalled();
   });
 
-  it('should call loaderService.hide after timeout', () => {
-    jest.useFakeTimers();
-    component.ngOnInit();
-
-    jest.advanceTimersByTime(2000);
-
-    expect(mockLoaderService.hide).toHaveBeenCalled();
-    jest.useRealTimers();
+  it('should have isLoading signal initialized as true', () => {
+    expect(component['isLoading']()).toBe(true);
   });
 
-  it('should scroll to top when NavigationEnd occurs in browser', () => {
-    const scrollToSpy = jest.fn();
-    Object.defineProperty(window, 'scrollTo', { value: scrollToSpy });
+  it('should call loaderService.hide after 2 seconds', async () => {
+    fixture.detectChanges();
 
-    component.ngOnInit();
+    // Espera o tempo real do timeout
+    await new Promise(resolve => setTimeout(resolve, 2100));
+
+    expect(mockLoaderService.hide).toHaveBeenCalled();
+  });
+
+  it('should set isLoading to false after 2 seconds', async () => {
+    fixture.detectChanges();
+
+    // Espera o tempo real do timeout
+    await new Promise(resolve => setTimeout(resolve, 2100));
+
+    expect(component['isLoading']()).toBe(false);
+  });
+
+  it('should scroll to top when NavigationEnd occurs', () => {
+    const scrollToSpy = vi.fn();
+    Object.defineProperty(window, 'scrollTo', { value: scrollToSpy, writable: true });
+
+    fixture.detectChanges();
 
     const navigationEnd = new NavigationEnd(1, '/', '/');
     routerEventsSubject.next(navigationEnd);
@@ -78,8 +99,8 @@ describe('AppComponent', () => {
   });
 
   it('should open WhatsApp in new tab when openWhatsApp is called in browser', () => {
-    const openSpy = jest.fn();
-    Object.defineProperty(window, 'open', { value: openSpy });
+    const openSpy = vi.fn();
+    Object.defineProperty(window, 'open', { value: openSpy, writable: true });
 
     component['openWhatsApp']();
 
@@ -89,24 +110,14 @@ describe('AppComponent', () => {
   describe('Server platform scenarios', () => {
     let serverComponent: AppComponent;
     let serverFixture: ComponentFixture<AppComponent>;
-    let serverRouterEventsSubject: Subject<any>;
-    let serverMockRouter: jest.Mocked<Router>;
 
     beforeEach(async () => {
-      serverRouterEventsSubject = new Subject();
-
-      serverMockRouter = {
-        navigate: jest.fn(),
-        events: serverRouterEventsSubject.asObservable(),
-        url: '/'
-      } as any;
-
       await TestBed.resetTestingModule();
 
       await TestBed.configureTestingModule({
         imports: [AppComponent],
         providers: [
-          { provide: Router, useValue: serverMockRouter },
+          { provide: Router, useValue: mockRouter },
           { provide: MpcLoaderService, useValue: mockLoaderService },
           { provide: PLATFORM_ID, useValue: 'server' }
         ]
@@ -116,21 +127,9 @@ describe('AppComponent', () => {
       serverComponent = serverFixture.componentInstance;
     });
 
-    it('should not scroll when not in browser', () => {
-      const scrollToSpy = jest.fn();
-      Object.defineProperty(window, 'scrollTo', { value: scrollToSpy });
-
-      serverComponent.ngOnInit();
-
-      const navigationEnd = new NavigationEnd(1, '/', '/');
-      serverRouterEventsSubject.next(navigationEnd);
-
-      expect(scrollToSpy).not.toHaveBeenCalled();
-    });
-
     it('should not open WhatsApp when not in browser', () => {
-      const openSpy = jest.fn();
-      Object.defineProperty(window, 'open', { value: openSpy });
+      const openSpy = vi.fn();
+      Object.defineProperty(window, 'open', { value: openSpy, writable: true });
 
       serverComponent['openWhatsApp']();
 

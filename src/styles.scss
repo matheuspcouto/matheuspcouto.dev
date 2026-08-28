@@ -1,8 +1,7 @@
-/* Importação de fontes */
-@import url('https://fonts.cdnfonts.com/css/raleway-5');
-
-/* Importação de bootstrap-icons */
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+/*--------------------------------------------------------------
+# Fontes e ícones carregados via <link rel="preload"> no index.html
+# para melhor performance (non-blocking)
+--------------------------------------------------------------*/
 
 /*--------------------------------------------------------------
 # Geral
@@ -23,13 +22,32 @@
   --color-primary: #0E2749;
   --color-secondary: #149DDD;
   --color-tertiary: #f5f8fd;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 5px 15px var(--color-secondary);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 5px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+  --radius-full: 50%;
 
   /* Definição de cores da mpc-lib-angular */
   --mpc-color-primary: var(--color-primary);
   --mpc-color-secondary: var(--color-secondary);
   --mpc-color-tertiary: var(--color-tertiary);
-
-  scroll-behavior: smooth;
 
   -ms-overflow-style: none;
   /* IE and Edge */
@@ -39,6 +57,10 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {

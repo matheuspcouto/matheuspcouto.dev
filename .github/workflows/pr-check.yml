@@ -1,66 +1,33 @@
-name: On Pull Request
+# =============================================================================
+# Code Check (PR Validation)
+#
+# Consumes the reusable workflow code-check.yml from avodah-docs-devops.
+#
+# Granular skip per job (via PR labels):
+#   skip-audit     → skip dependency audit
+#   skip-gitleaks  → skip secrets detection
+#   skip-lint      → skip ESLint
+#   skip-tests     → skip unit tests and coverage
+#   skip-build     → skip compilation and artifact validation
+# =============================================================================
+
+name: Code Check (PR)
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
     branches:
       - main
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  NODE_VERSION: "20.x"
+permissions:
+  security-events: write
+  contents: read
+  actions: read
 
 jobs:
-  # Build, testes e validações
-  build-and-test:
-    name: Build and Test
-    runs-on: ubuntu-latest
-    outputs:
-      build-success: ${{ steps.build-status.outputs.success }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Verify Node and npm versions
-        run: |
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-
-      - name: Install Dependencies
-        run: |
-          npm install --prefer-offline --no-audit
-          echo "✅ Dependencies installed successfully"
-
-      - name: Run Unit Tests
-        run: |
-          if npm run test --if-present; then
-            echo "✅ Tests passed"
-          else
-            echo "⚠️ No tests found or tests failed"
-          fi
-        continue-on-error: true
-
-      - name: Build Project
-        id: build
-        run: |
-          if npm run build --if-present; then
-            echo "✅ Build completed successfully"
-            echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
-          else
-            echo "❌ Build failed"
-            echo "BUILD_SUCCESS=false" >> $GITHUB_ENV
-            exit 1
-          fi
-
-      - name: Set Build Status
-        id: build-status
-        run: echo "success=${{ env.BUILD_SUCCESS }}" >> $GITHUB_OUTPUT
+  code-check:
+    uses: matheuspcouto/avodah-docs-devops/.github/workflows/code-check.yml@main
+    with:
+      node-version: '24.13.0'
+      coverage-threshold: 80
+      install-command: 'npm install --legacy-peer-deps'

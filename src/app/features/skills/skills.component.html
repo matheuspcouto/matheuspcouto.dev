@@ -1,0 +1,23 @@
+<section class="skills" id="skills">
+  <div class="container">
+
+    <div class="section-title">
+      <h2>Habilidades</h2>
+    </div>
+
+    <div class="row">
+      @for (skill of skills(); track skill.title) {
+      <div class="col-lg-6" data-aos="fade-up">
+        <div class="content">
+          <i [class]="skill.icon" aria-hidden="true"></i>
+          <span>{{ skill.title }}</span>
+          @for (item of skill.items; track item) {
+          <p>{{ item }}</p>
+          }
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+</section>
