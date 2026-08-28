@@ -1,21 +1,33 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+/**
+ * Componente principal da aplicação.
+ * Orquestra a navegação, loader e inicialização de bibliotecas externas.
+ *
+ * @author Matheus Pimentel Do Couto
+ */
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, inject, PLATFORM_ID, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router } from '@angular/router';
-import { ArticlesComponent } from './shared/components/articles/articles.component';
-import { ExperienceComponent } from './shared/components/experience/experience.component';
-import { CertificationsComponent } from './shared/components/certifications/certifications.component';
-import { SkillsComponent } from './shared/components/skills/skills.component';
-import { PageHeaderComponent } from './shared/components/page-header/page-header.component';
-import { ProjectsComponent } from './shared/components/projects/projects.component';
-import { AboutComponent } from './shared/components/about/about.component';
-import { MpcBtnFloatComponent, MpcLoaderComponent, NavbarConfig, MpcNavbarComponent, MpcLoaderService } from 'mpc-lib-angular';
+import { filter } from 'rxjs';
+import { ArticlesComponent } from './features/articles/articles.component';
+import { ExperienceComponent } from './features/experience/experience.component';
+import { CertificationsComponent } from './features/certifications/certifications.component';
+import { SkillsComponent } from './features/skills/skills.component';
+import { PageHeaderComponent } from './features/page-header/page-header.component';
+import { ProjectsComponent } from './features/projects/projects.component';
+import { AboutComponent } from './features/about/about.component';
+import { MpcBtnFloatComponent, MpcLoaderComponent, MpcLoaderService } from 'mpc-lib-angular';
 import AOS from 'aos';
 import { Routes } from './shared/enums/routes-enum';
-import { MpcFooterComponent } from './shared/components/mpc-footer/mpc-footer.component';
-import { ContactComponent } from './shared/components/contact/contact.component';
+import { MpcFooterComponent } from './features/mpc-footer/mpc-footer.component';
+import { ContactComponent } from './features/contact/contact.component';
+import { WHATSAPP_URL, LOADER_DELAY_MS } from './shared/constants';
+import { openInNewTab } from './shared/helpers';
+import { NavbarComponent, NavItem } from './features/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     PageHeaderComponent,
     AboutComponent,
@@ -25,81 +37,89 @@ import { ContactComponent } from './shared/components/contact/contact.component'
     ExperienceComponent,
     ProjectsComponent,
     ContactComponent,
-    MpcNavbarComponent,
+    NavbarComponent,
     MpcFooterComponent,
     MpcLoaderComponent,
     MpcBtnFloatComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
+  private readonly loaderService = inject(MpcLoaderService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Indica se o loader está visível. */
+  protected readonly isLoading = signal(true);
 
   /**
-   * Initializes the platform identification component.
-  */
-  private readonly platformId: any = inject(PLATFORM_ID);
-
-  /**
-   * Defines the application routes.
-   * @type {Router}
+   * Itens de navegação exibidos na barra superior.
    */
-  private readonly router: Router = inject(Router);
-
-  /**
-   * Controls the application loading state.
-   * @type {boolean}
-   */
-  private readonly loaderService: MpcLoaderService = inject(MpcLoaderService);
-
-  /**
-   * Navigation tabs displayed in the top bar.
-   * @type {NavbarConfig[]}
-   */
-  protected tabs: NavbarConfig[] = [
-    { id: 'home', titulo: 'Home', rota: Routes.HOME, icone: 'bi bi-house-fill' },
-    { id: 'about', titulo: 'About', rota: Routes.ABOUT, icone: 'bi bi-person-fill' },
-    { id: 'skills', titulo: 'Skills', rota: Routes.SKILLS, icone: 'bi bi-lightning-fill' },
-    { id: 'experience', titulo: 'Experience', rota: Routes.EXPERIENCE, icone: 'bi bi-briefcase-fill' },
-    { id: 'certifications', titulo: 'Certifications', rota: Routes.CERTIFICATIONS, icone: 'bi bi-award-fill' },
-    { id: 'projects', titulo: 'Projects', rota: Routes.PROJECTS, icone: 'bi bi-folder-fill' },
-    { id: 'articles', titulo: 'Articles', rota: Routes.ARTICLES, icone: 'bi bi-journal-text' },
-    { id: 'contact', titulo: 'Contact', rota: Routes.CONTACT, icone: 'bi bi-envelope-fill' }
+  protected readonly navItems: NavItem[] = [
+    { id: 'home', label: 'Home', rota: Routes.HOME, icon: 'bi bi-house-fill' },
+    { id: 'about', label: 'Sobre', rota: Routes.ABOUT, icon: 'bi bi-person-fill' },
+    { id: 'skills', label: 'Habilidades', rota: Routes.SKILLS, icon: 'bi bi-lightning-fill' },
+    { id: 'experience', label: 'Experiência', rota: Routes.EXPERIENCE, icon: 'bi bi-briefcase-fill' },
+    { id: 'certifications', label: 'Certificações', rota: Routes.CERTIFICATIONS, icon: 'bi bi-award-fill' },
+    { id: 'projects', label: 'Projetos', rota: Routes.PROJECTS, icon: 'bi bi-folder-fill' },
+    { id: 'articles', label: 'Artigos', rota: Routes.ARTICLES, icon: 'bi bi-journal-text' },
+    { id: 'contact', label: 'Contato', rota: Routes.CONTACT, icon: 'bi bi-envelope-fill' }
   ];
 
-  /**
-   * Initializes the component and adds a listener to control the visibility of the scroll to top button.
-   * @returns {void}
-   */
-  ngOnInit(): void {
-
+  constructor() {
     this.loaderService.show();
 
-    if (isPlatformBrowser(this.platformId)) {
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationEnd) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      });
-    }
+    // Usa afterNextRender para código que precisa do DOM (Angular 21+ pattern)
+    afterNextRender(() => {
+      this.initializeAOS();
+      this.setupRouterScrollBehavior();
+      this.hideLoaderAfterDelay();
+    });
+  }
 
+  /**
+   * Inicializa a biblioteca AOS para animações de scroll.
+   */
+  private initializeAOS(): void {
     AOS.init({
       duration: 1000,
       easing: 'ease-in-out',
       once: true,
       mirror: false
     });
-
-    setTimeout(() => this.loaderService.hide(), 2000);
   }
 
   /**
-   * Opens WhatsApp in a new tab for contact.
-   * @returns {void}
+   * Configura o comportamento de scroll ao navegar entre rotas.
+   */
+  private setupRouterScrollBehavior(): void {
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /**
+   * Esconde o loader após um delay.
+   */
+  private hideLoaderAfterDelay(): void {
+    setTimeout(() => {
+      this.loaderService.hide();
+      this.isLoading.set(false);
+    }, LOADER_DELAY_MS);
+  }
+
+  /**
+   * Abre o WhatsApp em uma nova aba para contato.
    */
   protected openWhatsApp(): void {
     if (isPlatformBrowser(this.platformId)) {
-      window.open('https://wa.me/55639992014337', '_blank');
+      openInNewTab(WHATSAPP_URL);
     }
   }
 }

@@ -1,0 +1,91 @@
+<section class="contact" id="contact">
+    <div class="container">
+
+        <div class="section-title">
+            <h2>Contato</h2>
+        </div>
+
+        <div class="row">
+
+            <!-- Contact Information -->
+            <div class="col-lg-5 info-contact" data-aos="fade-right">
+                <h3>Informações</h3>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-telephone" aria-hidden="true"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>Telefone</h4>
+                        <p>(63) 9 9201-4337</p>
+                    </div>
+                </div>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-envelope" aria-hidden="true"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>E-mail</h4>
+                        <p>matheuspcouto70&#64;gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="item-contact">
+                    <div class="icone">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    </div>
+                    <div class="conteudo">
+                        <h4>Endereço</h4>
+                        <p>Palmas, Tocantins, Brasil</p>
+                    </div>
+                </div>
+
+                <div class="redes-sociais">
+                    <h4>Redes</h4>
+                    <div class="links-sociais">
+                        <a href="https://github.com/matheuspcouto" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
+                            <i class="bi bi-github" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/matheuspcouto/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile">
+                            <i class="bi bi-linkedin" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://www.instagram.com/matheuspcouto" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile">
+                            <i class="bi bi-instagram" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-lg-7" data-aos="fade-left">
+                <div class="contact-form">
+                    <h3>Envie uma Mensagem</h3>
+
+                    <form [formGroup]="form">
+
+                        <!-- Name Field -->
+                        <mpc-input-text formControlName="name" label="Nome" [min]="3" class="form-input" />
+
+                        <!-- Email Field -->
+                        <mpc-input-email formControlName="email" [required]="true" class="form-input" />
+
+                        <!-- Message Field -->
+                        <mpc-input-text-area formControlName="message" label="Mensagem" [min]="10"
+                            class="form-input" />
+
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-center mt-5">
+                            <mpc-button class="btn-send" texto="Enviar" (click)="submitForm()"
+                                icone="bi bi-send" [disabled]="form.invalid" />
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>

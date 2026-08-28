@@ -1,157 +1,70 @@
-name: Deploy on DEV
+# =============================================================================
+# Deploy to Preview (DEV)
+#
+# Consumes reusable workflows from avodah-docs-devops.
+# Trigger: workflow_dispatch only (manual).
+# Flow: code-check → frontend-deploy (build + deploy)
+#
+# Deploy URLs:
+#   - custom-url:  Vercel alias URL (healthcheck)
+#   - access-url:  End user access URL
+#
+# Access: https://develop-matheuspcouto-dev.vercel.app/
+# =============================================================================
+
+name: Deploy to Preview (DEV)
 
 on:
   workflow_dispatch:
-
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  NODE_VERSION: "20.x"
-  CUSTOM_URL: "develop-matheuspcouto-dev.vercel.app"
+    inputs:
+      skip-audit:
+        description: 'Skip dependency audit'
+        required: false
+        type: boolean
+        default: false
+      skip-gitleaks:
+        description: 'Skip secrets detection'
+        required: false
+        type: boolean
+        default: false
+      skip-lint:
+        description: 'Skip ESLint'
+        required: false
+        type: boolean
+        default: false
+      skip-tests:
+        description: 'Skip unit tests and coverage'
+        required: false
+        type: boolean
+        default: false
+      skip-build:
+        description: 'Skip compilation'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  # Validação inicial e setup
-  validate:
-    name: Validate Environment
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      should-deploy: ${{ steps.check.outputs.should-deploy }}
-    steps:
-      - name: Check Required Vercel Secrets
-        id: check
-        run: |
-          if [[ -z "${{ secrets.VERCEL_TOKEN }}" || -z "${{ secrets.VERCEL_ORG_ID }}" || -z "${{ secrets.VERCEL_PROJECT_ID }}" ]]; then
-            echo "❌ Missing required Vercel secrets"
-            echo "should-deploy=false" >> $GITHUB_OUTPUT
-            exit 1
-          else
-            echo "✅ All required secrets are present"
-            echo "should-deploy=true" >> $GITHUB_OUTPUT
-          fi
+  code-check:
+    uses: matheuspcouto/avodah-docs-devops/.github/workflows/code-check.yml@main
+    with:
+      node-version: '24.13.0'
+      coverage-threshold: 80
+      install-command: 'npm install --legacy-peer-deps'
+      skip-audit: ${{ inputs.skip-audit || false }}
+      skip-gitleaks: ${{ inputs.skip-gitleaks || false }}
+      skip-lint: ${{ inputs.skip-lint || false }}
+      skip-tests: ${{ inputs.skip-tests || false }}
+      skip-build: ${{ inputs.skip-build || false }}
 
-  # Build, testes e validações
-  build-and-test:
-    name: Build and Test
-    runs-on: ubuntu-latest
-    needs: validate
-    if: needs.validate.outputs.should-deploy == 'true'
-    outputs:
-      build-success: ${{ steps.build-status.outputs.success }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Verify Node and npm versions
-        run: |
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-
-      - name: Install Dependencies
-        run: |
-          npm install --prefer-offline --no-audit
-          echo "✅ Dependencies installed successfully"
-
-      - name: Run Unit Tests
-        run: |
-          if npm run test --if-present; then
-            echo "✅ Tests passed"
-          else
-            echo "⚠️ No tests found or tests failed"
-          fi
-        continue-on-error: true
-
-      - name: Build Project
-        id: build
-        run: |
-          if npm run build --if-present; then
-            echo "✅ Build completed successfully"
-            echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
-          else
-            echo "❌ Build failed"
-            echo "BUILD_SUCCESS=false" >> $GITHUB_ENV
-            exit 1
-          fi
-
-      - name: Set Build Status
-        id: build-status
-        run: echo "success=${{ env.BUILD_SUCCESS }}" >> $GITHUB_OUTPUT
-
-      - name: Upload Build Artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            dist/
-            .next/
-            build/
-          retention-days: 1
-
-  # Deploy on DEV
-  deploy-dev:
-    name: Deploy on DEV
-    runs-on: ubuntu-latest
-    needs: [validate, build-and-test]
-    if: needs.build-and-test.outputs.build-success == 'true'
-    concurrency:
-      group: dev-deployment
-      cancel-in-progress: true
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Cache Vercel CLI
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-vercel-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Vercel CLI
-        run: |
-          npm install -g vercel@latest
-          vercel --version
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-        continue-on-error: true
-
-      - name: Pull Vercel Environment Configuration - DEV
-        run: |
-          vercel pull --yes --environment=development --token=${{ secrets.VERCEL_TOKEN }}
-          echo "✅ Vercel configuration pulled successfully"
-
-      - name: Build Project for Vercel
-        run: |
-          vercel build --token=${{ secrets.VERCEL_TOKEN }}
-          echo "✅ Vercel build completed"
-
-      - name: Deploy to DEV
-        id: deploy
-        run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          echo "development-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "✅ Deployment successful: $DEPLOYMENT_URL"
-
-      - name: Set Custom Domain - DEV
-        if: success()
-        run: |
-          CUSTOM_URL=${{ env.CUSTOM_URL }}
-          vercel alias --token=${{ secrets.VERCEL_TOKEN }} set "${{ steps.deploy.outputs.development-url }}" "$CUSTOM_URL"
-          echo "✅ Custom alias set: https://$CUSTOM_URL"
+  deploy:
+    needs: code-check
+    if: always() && !contains(needs.code-check.result, 'failure')
+    uses: matheuspcouto/avodah-docs-devops/.github/workflows/frontend-deploy.yml@main
+    with:
+      deploy-env: 'preview'
+      custom-url: 'develop-matheuspcouto-dev.vercel.app'
+      access-url: 'https://develop-matheuspcouto-dev.vercel.app/'
+      git-env: 'preview'
+      node-version: '24.13.0'
+      vercel-cli-version: '54'
+    secrets: inherit

@@ -1,0 +1,78 @@
+<!-- ======= Footer ======= -->
+<footer>
+  <!-- Logo -->
+  <div class="footer-img">
+    <img src="/img/profile.png" alt="Matheus Pimentel Do Couto - Footer Logo" loading="lazy" width="100" height="100">
+  </div>
+  <!-- End Logo -->
+
+  <!-- Information -->
+  <div class="row">
+
+    <div class="footer-links col-lg-4">
+      <i class="bi bi-geo-alt" aria-hidden="true"></i>
+      <div>
+        <h4>Endereço</h4>
+        <p>
+          Palmas, Tocantins, Brasil<br>
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-links col-lg-4">
+      <i class="bi bi-telephone" aria-hidden="true"></i>
+      <div>
+        <h4>Contato</h4>
+        <p>
+          <strong>Telefone:</strong> {{ phone() }}<br>
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-links col-lg-4">
+      <i class="bi bi-person-fill" aria-hidden="true"></i>
+      <div>
+        <h4>Siga-me</h4>
+        <div class="social-links">
+          <a [href]="socialUrls().GITHUB" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
+            <i class="bi bi-github" aria-hidden="true"></i>
+          </a>
+          <a [href]="socialUrls().LINKEDIN" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile">
+            <i class="bi bi-linkedin" aria-hidden="true"></i>
+          </a>
+          <a [href]="socialUrls().INSTAGRAM" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile">
+            <i class="bi bi-instagram" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="py-4">
+
+  </div>
+  <!-- End Information -->
+
+  <!-- Developer Social Media -->
+  <div class="text-center p-2">
+    <div class="social-links-dev">
+      <a [href]="socialUrls().PORTFOLIO" target="_blank" rel="noopener noreferrer" aria-label="Portfolio">
+        <i class="bi bi-person" aria-hidden="true"></i>
+      </a>
+      <a [href]="socialUrls().GITHUB" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
+        <i class="bi bi-github" aria-hidden="true"></i>
+      </a>
+      <a [href]="socialUrls().INSTAGRAM" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile">
+        <i class="bi bi-instagram" aria-hidden="true"></i>
+      </a>
+      <a [href]="socialUrls().LINKEDIN" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile">
+        <i class="bi bi-linkedin" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <p>Desenvolvido por Matheus Pimentel Do Couto © - {{ currentYear() }}</p>
+  </div>
+  <!-- End Developer Social Media -->
+
+
+</footer>
+<!-- ======= End Footer ======= -->

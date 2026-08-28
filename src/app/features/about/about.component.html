@@ -1,0 +1,61 @@
+<section class="about" id="about">
+  <div class="container">
+
+    <div class="section-title">
+      <h2>Sobre</h2>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-4" data-aos="fade-right">
+        <img src="/img/profile.png" alt="Matheus Pimentel Do Couto - Profile Photo" class="img-fluid rounded-lg"
+          loading="lazy" width="400" height="400">
+      </div>
+      <div class="col-lg-8 pt-4 pt-lg-0" data-aos="fade-left">
+        <h3>Matheus Pimentel Do Couto</h3>
+        <p>
+          Full-Stack Software Engineer com mais de {{ yearsOfExperience() }} anos de experiência e bacharel em
+          Sistemas de Informação pela Universidade Estadual do Tocantins.
+          Atuo no desenvolvimento, modernização e evolução de APIs REST e
+          aplicações web escaláveis em ambientes corporativos complexos.
+          Aplico princípios de SOLID, Clean Code, Arquitetura Hexagonal e
+          Domain-Driven Design (DDD) para construir sistemas de alto desempenho, resilientes e de fácil manutenção.
+        </p>
+        <p>
+          Minha experiência técnica inclui Java, Node.js, Angular, TypeScript, Spring Boot, Microservices, System
+          Design,
+          Software Architecture, CI/CD, DevOps, Cloud, AWS e Azure, além de ferramentas de qualidade e segurança como
+          SonarQube,
+          Fortify e Amazon Inspector. Também possuo experiência com desenvolvimento assistido por IA utilizando GitHub
+          Copilot,
+          Amazon Q Developer, Claude Code e OpenAI Codex.
+        </p>
+        <p>
+          Liderei a atualização tecnológica de mais de 500 APIs REST no Bradesco Seguros,
+          contribuindo para melhorias de desempenho, confiabilidade, manutenibilidade e segurança.
+          Colaborei na homologação de ferramentas internas de IA.
+          Também desenvolvi aplicações financeiras para o Banco Bradesco, utilizadas por milhares de usuários em todo o
+          Brasil,
+          e liderei a transformação de UX/UI do aplicativo Bradesco Pix para pessoas físicas.
+        </p>
+        <p>
+          Busco oportunidades remotas no Brasil, com foco em desenvolvimento de software, APIs, arquitetura e sistemas
+          escaláveis.
+        </p>
+        <div class="row">
+          <div class="col-lg-6">
+            <ul>
+              <li><i class="bi bi-arrow-right-short" aria-hidden="true"></i> <strong>Morando em:</strong> Palmas,
+                Tocantins, Brasil</li>
+              <li><i class="bi bi-arrow-right-short" aria-hidden="true"></i> <strong>Idade:</strong> {{ age() }}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="buttons">
+          <mpc-button class="btn-resume" (click)="viewResumePT()" texto="Currículo" icone="bi bi-file-earmark-text"
+            posicaoIcone="esquerda" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
