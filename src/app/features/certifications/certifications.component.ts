@@ -51,7 +51,7 @@ export class CertificationsComponent {
       url: 'https://www.udemy.com/certificate/UC-0f71c539-372d-493c-9ac1-4dfafc3cac84/'
     },
     {
-      title: 'GitHub Foundations | Microsoft',
+      title: 'GitHub Foundations (GH-900) | Microsoft',
       icon: 'bi bi-github',
       completionDate: 'Setembro - 2026',
       url: 'https://learn.microsoft.com/pt-br/users/matheuspcouto/credentials/cda01dbe23f93f21?ref=https%3A%2F%2Fwww.linkedin.com%2F'
