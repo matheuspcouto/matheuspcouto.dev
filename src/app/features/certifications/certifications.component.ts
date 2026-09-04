@@ -41,7 +41,7 @@ export class CertificationsComponent {
     {
       title: 'AWS Partner: Technical Accredited | AWS',
       icon: 'bi bi-amazon',
-      completionDate: 'Fevereriro - 2026',
+      completionDate: 'Fevereiro - 2026',
       url: 'https://www.credly.com/badges/4d1ae9e7-4fae-496d-b6bf-71db9e586bbd'
     },
     {
@@ -51,10 +51,10 @@ export class CertificationsComponent {
       url: 'https://www.udemy.com/certificate/UC-0f71c539-372d-493c-9ac1-4dfafc3cac84/'
     },
     {
-      title: 'Gtihub Foundations | DataCamp',
+      title: 'GitHub Foundations | Microsoft',
       icon: 'bi bi-github',
-      completionDate: 'Agosto - 2026',
-      url: 'https://www.datacamp.com/completed/statement-of-accomplishment/track/8139ff4f7eefcd093e0ac4731120f082da095749'
+      completionDate: 'Setembro - 2026',
+      url: 'https://learn.microsoft.com/pt-br/users/matheuspcouto/credentials/cda01dbe23f93f21?ref=https%3A%2F%2Fwww.linkedin.com%2F'
     },
     {
       title: 'Academia Angular | Impacta',
