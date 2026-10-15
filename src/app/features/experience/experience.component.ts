@@ -71,7 +71,7 @@ export class ExperienceComponent {
     },
     {
       title: 'Full-Stack Software Engineer (Remoto)',
-      period: 'Outubro de 2025 - Atualmente',
+      period: 'Outubro de 2025 - Outubro de 2026',
       company: 'Nava | Tech for Business',
       activities: [
         'Liderei a migração e modernização de mais de 500 APIs REST para a Bradesco Seguros, utilizando Java, Node.js e Angular, com foco em evolução tecnológica, qualidade, desempenho e manutenibilidade.',

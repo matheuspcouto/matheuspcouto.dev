@@ -58,6 +58,5 @@ describe('ExperienceComponent', () => {
       work.company.toLowerCase().includes('nava')
     );
     expect(navaWork).toBeDefined();
-    expect(navaWork?.period).toContain('Atualmente');
   });
 });
