@@ -82,5 +82,13 @@ export class ExperienceComponent {
         'Atuei na mentoria de desenvolvedores juniores e em revisões de código, contribuindo para o aumento da qualidade do código e a redução da incidência de bugs.'
       ],
     },
+    {
+      title: 'Senior Software Engineer (Remoto)',
+      period: 'Outubro de 2026 - Atualmente',
+      company: 'Foursys',
+      activities: [
+        'Atuei na mentoria de desenvolvedores juniores e em revisões de código, contribuindo para o aumento da qualidade do código e a redução da incidência de bugs.'
+      ],
+    },
   ]);
 }
